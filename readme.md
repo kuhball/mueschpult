@@ -7,4 +7,4 @@ Dokumentation des Mischpults für die Jupibar im Gängeviertel.
 
 ## Benutze Libraries
 ### Tlc5940
-Benutzt für LEDs auf Panel
+Benutzt für LEDs auf Panel.
