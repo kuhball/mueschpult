@@ -12,10 +12,15 @@ Benutzt für LEDs auf Frontpanel.
 ## Hardware
 ### Mux 4051
 8 Kanal analog Multiplexer für Input Potis.
-Pins für Mux:
+Pins für lesen:
 - A0
 - A1
 - A2
+
+Pins für setzen des Zustands:
+- A3
+- A4
+- A5
 
 ## DME Setup List
 
