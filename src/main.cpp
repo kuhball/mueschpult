@@ -75,7 +75,7 @@ public:
 
     void update() {
         // Looping over private inputs array
-        for (int i = 0; i < 21; i++) {
+        for (int i = 0; i < 22; i++) {
             // Changing Mux if needed - normally every 3rd time
             if (inputs[i].mux != currentMux) {
                 setMux(inputs[i].mux);
@@ -97,7 +97,7 @@ public:
     };
 private:
     // input array - if needed change size, for loop and add input
-    inputpin inputs[21] = {
+    inputpin inputs[22] = {
             // SWITCHES
             {0, 0, PIN_MUX1, 50, true,  false},   // Talkover Mic1
             {0, 0, PIN_MUX2, 51, true,  false},   // Talkover Mic2
@@ -124,6 +124,8 @@ private:
             {0, 6, PIN_MUX1, 76, false, false},   // High
             {0, 6, PIN_MUX2, 77, false, false},   // Mid
             {0, 6, PIN_MUX3, 78, false, false},   // Low
+            // extra
+            {0, 7, PIN_MUX1, 79, true, false},    // Delay Switch
     };
 
     // cached mux pin
@@ -200,10 +202,16 @@ public:
     };
 private:
     // output array
-    outputpin outputs[3] = {
+    outputpin outputs[9] = {
             {0, 1,  1, true}, // input DJ oben
-            {0, 18, 2, true}, // input Bar
-            {0, 33, 3, true}, // input spare
+            {0, 17, 2, true}, // input Bar
+            {0, 32, 3, true}, // input spare
+            {0, 11, 15, false}, // Mic1 Level
+            {0, 12, 16, false}, // Mic2 Level
+            {0, 13, 5, false}, // Output Oben Level
+            {0, 14, 6, false}, // Output Bar Level
+            {0, 15, 7, false}, // Output Keller Level
+            {0, 28, 99, false} // Error LED
     };
 
 };
