@@ -19,9 +19,7 @@
 #define SERIAL_BAUD 38400
 
 /*MUX STUFF*/
-// MUX1 fader 1-8
 #define PIN_MUX1 A0
-// Fader 9-16 and Button 1-6
 #define PIN_MUX2 A1
 #define PIN_MUX3 A2
 
@@ -36,44 +34,69 @@ struct inputpin {
     uint8_t pin; // Pin to read from
     uint8_t dme; // Value needed for DME set
     bool digital; // needed to distinguish analog from digital read
-    bool changed; // only sent value to DME if changed
+    bool stereo;
 };
 
 struct outputpin {
     int value;
     uint8_t out; // TLC Number
     uint8_t dme; // DME Read number
-    bool bar;    //
+    bool bar;
 };
 
 class Inputs {
 public:
-    struct inputpin get(unsigned char i) {
-        return inputs[i];
+    // send command over serial to DME
+    void set(inputpin input) {
+        // different command for EQ
+        if (input.mux < 7 && input.mux > 3) {
+            Serial.print("PRM 0 ");
+            Serial.print(input.dme);
+            Serial.print(" ");
+            Serial.print(input.value);
+            Serial.print('\n');
+        } else {
+            Serial.print("VOL 0 ");
+            Serial.print(input.dme);
+            Serial.print(" ");
+            Serial.print(input.value);
+            Serial.print('\n');
+
+            // Setting two values -> Stereo
+            if (input.stereo) {
+                Serial.print("VOL 0 ");
+                Serial.print(input.dme + 1);
+                Serial.print(" ");
+                Serial.print(input.value);
+                Serial.print('\n');
+            }
+        }
     };
 
     void update() {
-        for (inputpin x: inputs) {
-            if (x.mux != currentMux) {
-                setMux(x.mux);
-                currentMux = x.mux;
+        // Looping over private inputs array
+        for (int i = 0; i < 21; i++) {
+            // Changing Mux if needed - normally every 3rd time
+            if (inputs[i].mux != currentMux) {
+                setMux(inputs[i].mux);
+                currentMux = inputs[i].mux; // saving current Mux pin
             }
 
-            int cache = readPin(x.pin, x.digital);
+            // analog / digital read the input pin
+            int cache = readPin(inputs[i].pin, inputs[i].digital);
 
-
-            if (cache < x.value - 3 || cache > x.value + 3) {
-                x.value = cache;
-                x.changed = true;
-            } else if (x.digital && cache != x.value){
-                x.value = cache;
-                x.changed = true;
-            } else {
-              x.changed = false;
+            // debouncing value - only values with a bigger difference than 3 are send
+            if (cache < inputs[i].value - 3 || cache > inputs[i].value + 3) {
+                inputs[i].value = cache;
+                set(inputs[i]);
+            } else if (inputs[i].digital && cache != inputs[i].value) { // digital always
+                inputs[i].value = cache;
+                set(inputs[i]);
             }
         }
     };
 private:
+    // input array - if needed change size, for loop and add input
     inputpin inputs[21] = {
             // SWITCHES
             {0, 0, PIN_MUX1, 50, true,  false},   // Talkover Mic1
@@ -83,12 +106,12 @@ private:
             // POTIS
             {0, 1, PIN_MUX2, 54, false, false},   // Volume Mic1
             {0, 1, PIN_MUX3, 55, false, false},   // Volume Mic2
-            {0, 2, PIN_MUX1, 58, false, false},   // Input DJ
-            {0, 2, PIN_MUX2, 60, false, false},   // Input Bar
-            {0, 2, PIN_MUX3, 62, false, false},   // Input Spare
-            {0, 3, PIN_MUX1, 64, false, false},   // Output Oben
-            {0, 3, PIN_MUX2, 66, false, false},   // Output Bar
-            {0, 3, PIN_MUX3, 68, false, false},   // Output Unten
+            {0, 2, PIN_MUX1, 58, false, true},   // Input DJ
+            {0, 2, PIN_MUX2, 60, false, true},   // Input Bar
+            {0, 2, PIN_MUX3, 62, false, true},   // Input Spare
+            {0, 3, PIN_MUX1, 64, false, true},   // Output Oben
+            {0, 3, PIN_MUX2, 66, false, true},   // Output Bar
+            {0, 3, PIN_MUX3, 68, false, true},   // Output Unten
             // EQ Oben
             {0, 4, PIN_MUX1, 70, false, false},   // High
             {0, 4, PIN_MUX2, 71, false, false},   // Mid
@@ -103,8 +126,10 @@ private:
             {0, 6, PIN_MUX3, 78, false, false},   // Low
     };
 
+    // cached mux pin
     uint8_t currentMux;
 
+    // read analog / digital pin
     int readPin(uint8_t pin, bool digital) {
         if (!digital) {
             return analogRead(pin);
@@ -113,6 +138,7 @@ private:
         }
     }
 
+    // set mux pins
     void setMux(uint8_t mux) {
         switch (mux) {
             case 0:
@@ -163,6 +189,7 @@ private:
 
 class Outputs {
 public:
+    // set LED Bar output
     void setBar(outputpin out) {
         Tlc.clear();
         int level = map(out.value, 0, 1023, 0, 10);
@@ -171,46 +198,42 @@ public:
         }
         Tlc.update();
     };
-};
-
-class DME {
-public:
-    DME() {
-        Serial.println("Com started.");
+private:
+    // output array
+    outputpin outputs[3] = {
+            {0, 1,  1, true}, // input DJ oben
+            {0, 18, 2, true}, // input Bar
+            {0, 33, 3, true}, // input spare
     };
+
 };
 
-void setupPins()
-{
-	pinMode(PIN_MUX1, INPUT);
-	pinMode(PIN_MUX2, INPUT);
-	pinMode(PIN_MUX3, INPUT);
+void setupPins() {
+    pinMode(PIN_MUX1, INPUT);
+    pinMode(PIN_MUX2, INPUT);
+    pinMode(PIN_MUX3, INPUT);
 
-  pinMode(MUX_S0, OUTPUT);
-  pinMode(MUX_S1, OUTPUT);
-  pinMode(MUX_S2, OUTPUT);
-}
+    pinMode(MUX_S0, OUTPUT);
+    pinMode(MUX_S1, OUTPUT);
+    pinMode(MUX_S2, OUTPUT);
+};
 
 // Creating class objects
 Inputs inputs;
 Outputs outputs;
 
 void setup() {
-    Serial.begin(9600);
+    // Start Serial - BAUD set in define
+    Serial.begin(SERIAL_BAUD);
     setupPins();
+
+    // init TLC for LEDs
     Tlc.init();
     Tlc.clear();
-
-    digitalWrite(MUX_S0, HIGH);
-    digitalWrite(MUX_S1, LOW);
-    digitalWrite(MUX_S2, LOW);
 };
 
 void loop() {
-  // for (int i = 0; i < 48; i++) {
-  //   Tlc.set(i, 4095);
-  // }
-  // Tlc.update();
-  // delay(1000);
-  outputs.setBar({analogRead(PIN_MUX2),1,7,true});
+    //update all inputs and send to dme
+    inputs.update();
+    delay(1000);
 };
