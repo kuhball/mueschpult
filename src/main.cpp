@@ -125,7 +125,7 @@ private:
             {0, 6, PIN_MUX2, 77, false, false},   // Mid
             {0, 6, PIN_MUX3, 78, false, false},   // Low
             // extra
-            {0, 7, PIN_MUX1, 79, true, false},    // Delay Switch
+            {0, 7, PIN_MUX1, 79, true,  false},    // Delay Switch
     };
 
     // cached mux pin
@@ -192,25 +192,32 @@ private:
 class Outputs {
 public:
     // set LED Bar output
-    void setBar(outputpin out) {
-        Tlc.clear();
-        int level = map(out.value, 0, 1023, 0, 10);
-        for (int i = out.out; i < out.out + level; i++) {
-            Tlc.set(i, 4095);
+    void set(outputpin out) {
+        if (out.bar) {
+            // map DME value to 10 LEDs, not dimmed
+            int level = map(out.value, 0, 1023, 0, 10);
+            for (int i = out.out; i < out.out + level; i++) {
+                Tlc.set(i, 4095);
+            }
+        } else {
+            // map DME value to 1 LED, dimmed
+            int level = map(out.value, 0, 1023, 0, 4095);
+            Tlc.set(out.out, level);
         }
+
         Tlc.update();
     };
 private:
     // output array
     outputpin outputs[9] = {
-            {0, 1,  1, true}, // input DJ oben
-            {0, 17, 2, true}, // input Bar
-            {0, 32, 3, true}, // input spare
+            {0, 1,  1,  true}, // input DJ oben
+            {0, 17, 2,  true}, // input Bar
+            {0, 32, 3,  true}, // input spare
             {0, 11, 15, false}, // Mic1 Level
             {0, 12, 16, false}, // Mic2 Level
-            {0, 13, 5, false}, // Output Oben Level
-            {0, 14, 6, false}, // Output Bar Level
-            {0, 15, 7, false}, // Output Keller Level
+            {0, 13, 5,  false}, // Output Oben Level
+            {0, 14, 6,  false}, // Output Bar Level
+            {0, 15, 7,  false}, // Output Keller Level
             {0, 28, 99, false} // Error LED
     };
 
@@ -241,6 +248,7 @@ void setup() {
 };
 
 void loop() {
+    Tlc.clear();
     //update all inputs and send to dme
     inputs.update();
     delay(1000);
