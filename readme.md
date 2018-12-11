@@ -22,7 +22,7 @@ Pins für setzen des Zustands:
 - A4
 - A5
 
-## DME Setup List
+## DME Setup Liste
 
 - Talkover für Mikrofone 50 / 51 (mic1, mic2) - binär 1/0
 - Mute für Mikrofone 52 / 53 (mic1, mic2) - 0/1
@@ -55,3 +55,40 @@ Pins für setzen des Zustands:
   - High 76
   - Mid 77
   - Low 78
+
+## Inputs Arduino
+### MUX 1
+| Name           | Pin  | DME  |
+| -------------- | ---- | ---- |
+| Talkover Mic1  | 0    | 50   |
+| Mute Mic2      | 1    | 53   |
+| Input DJ       | 2    | 58   |
+| Output Oben    | 3    | 64   |
+| EQ Oben High   | 4    | 70   |
+| EQ Bar High    | 5    | 73   |
+| EQ Keller High | 6    | 76   |
+| Delay Switch   | 7    | ??   |
+
+## MUX 2
+| Name          | Pin  | DME  |
+| ------------- | ---- | ---- |
+| Talkover Mic2 | 0    | 51   |
+| Volume Mic1   | 1    | 54   |
+| Input Bar     | 2    | 60   |
+| Output Bar    | 3    | 66   |
+| EQ Oben Mid   | 4    | 71   |
+| EQ Bar Mid    | 5    | 74   |
+| EQ Keller Mid | 6    | 77   |
+|               | 7    |      |
+
+## MUX 3
+| Name          | Pin  | DME  |
+| ------------- | ---- | ---- |
+| Mute Mic1     | 0    | 52   |
+| Volume Mic2   | 1    | 55   |
+| Input Spare   | 2    | 62   |
+| Output Unten  | 3    | 68   |
+| EQ Oben Low   | 4    | 72   |
+| EQ Bar Low    | 5    | 75   |
+| EQ Keller Low | 6    | 78   |
+|               | 7    |      |
