@@ -48,26 +48,34 @@ class Inputs {
 public:
     // send command over serial to DME
     void set(inputpin input) {
+        int level;
+
         // different command for EQ
         if (input.mux < 7 && input.mux > 3) {
-            Serial.print("PRM 0 ");
+            level = map(input.value, 0, 1023, -1800, 1800);
+            Serial.print("SPR 0 ");
             Serial.print(input.dme);
             Serial.print(" ");
-            Serial.print(input.value);
+            Serial.print(level);
             Serial.print('\n');
         } else {
-            Serial.print("VOL 0 ");
+            if (!input.digital){
+              level = map(input.value, 0, 1023, -13801, 1000);
+            } else {
+              level = input.value;
+            }
+            Serial.print("SPR 0 ");
             Serial.print(input.dme);
             Serial.print(" ");
-            Serial.print(input.value);
+            Serial.print(level);
             Serial.print('\n');
 
             // Setting two values -> Stereo
             if (input.stereo) {
-                Serial.print("VOL 0 ");
+                Serial.print("SPR 0 ");
                 Serial.print(input.dme + 1);
                 Serial.print(" ");
-                Serial.print(input.value);
+                Serial.print(level);
                 Serial.print('\n');
             }
         }
@@ -191,11 +199,21 @@ private:
 
 class Outputs {
 public:
+    void getDME(){
+        Serial.print("GMT 0 56 0 \n");
+        if (Serial.available())
+        {
+           s = Serial.readStringUntil('\n');   // Until CR (Carriage Return)
+        }
+        DPRINTLN(s);
+        DPRINTLN(s.substring(126));
+
+    };
     // set LED Bar output
     void set(outputpin out) {
         if (out.bar) {
             // map DME value to 10 LEDs, not dimmed
-            int level = map(out.value, 0, 1023, 0, 10);
+            int level = map(out.value, -13801, 1, 0, 10);
             for (int i = out.out; i < out.out + level; i++) {
                 Tlc.set(i, 4095);
             }
@@ -208,6 +226,8 @@ public:
         Tlc.update();
     };
 private:
+    String s;
+
     // output array
     outputpin outputs[9] = {
             {0, 1,  1,  true}, // input DJ oben
@@ -247,9 +267,12 @@ void setup() {
     Tlc.clear();
 };
 
+
 void loop() {
-    Tlc.clear();
-    //update all inputs and send to dme
-    inputs.update();
+    // Tlc.clear();
+    // //update all inputs and send to dme
+    // inputs.update();
+    // delay(1000);
+    outputs.getDME();
     delay(1000);
 };
