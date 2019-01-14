@@ -32,11 +32,11 @@ Pins für setzen des Zustands:
   - 1 - Input DJ Oben
   - 2 - Input Bar
   - 3 - Spare Input
-  - 5 - Output Level Oben
-  - 6 - Output Level Bar
-  - 7 - Output Level Keller
-  - 15 - Mic 1 Level
-  - 16 - Mic 2 Level
+  - 4 - Output Level Oben
+  - 5 - Output Level Bar
+  - 6 - Output Level Keller
+  - 7 - Mic 1 Level
+  - 8 - Mic 2 Level
 - Input Level Stereo in 1 - 58/59  min -13801, max 1000
 - Input Level Stereo in 2 - 60/61 min -13801, max 1000
 - Input Level Stereo in 3 - 62/63 min -13801, max 1000
@@ -92,3 +92,11 @@ Pins für setzen des Zustands:
 | EQ Bar Low    | 5    | 75   |
 | EQ Keller Low | 6    | 78   |
 |               | 7    |      |
+
+## DME Meter
+```
+MTR 0 56 0 CUR -13801 -13801 -13801 -6000 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 HOLD -9322 -9741 -9332 -13801 -7421 -8943 -8943 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801
+
+MTR 0 56 0 CUR -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 HOLD -9322 -9741 -9332 -13801 -7421 -8943 -8943 -13801
+
+```

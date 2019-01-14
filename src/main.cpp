@@ -18,6 +18,8 @@
 #define SERIAL_TX 3 //possible pins: 8, 9, 10, 11, 14 (MISO), 15 (SCK), 16 (MOSI)
 #define SERIAL_BAUD 38400
 
+#define ERROR_LED 7
+
 /*MUX STUFF*/
 #define PIN_MUX1 A0
 #define PIN_MUX2 A1
@@ -44,39 +46,29 @@ struct outputpin {
     bool bar;
 };
 
+const byte numChars = 100;
+char receivedChars[numChars];
+char tempChars[numChars];        // temporary array for use when parsing
+
+boolean newData = false;
+
+// set if outputs were updated
+boolean outputUpdate = false;
+
+
 class Inputs {
 public:
     // send command over serial to DME
     void set(inputpin input) {
-        int level;
-
         // different command for EQ
         if (input.mux < 7 && input.mux > 3) {
-            level = map(input.value, 0, 1023, -1800, 1800);
-            Serial.print("SPR 0 ");
-            Serial.print(input.dme);
-            Serial.print(" ");
-            Serial.print(level);
-            Serial.print('\n');
+            int level = map(input.value, 0, 1023, -1800, 1800);
+            send(level, input.dme);
         } else {
-            if (!input.digital){
-              level = map(input.value, 0, 1023, -13801, 1000);
-            } else {
-              level = input.value;
-            }
-            Serial.print("SPR 0 ");
-            Serial.print(input.dme);
-            Serial.print(" ");
-            Serial.print(level);
-            Serial.print('\n');
-
-            // Setting two values -> Stereo
+            send(input.value, input.dme);
+            // Setting second value -> Stereo
             if (input.stereo) {
-                Serial.print("SPR 0 ");
-                Serial.print(input.dme + 1);
-                Serial.print(" ");
-                Serial.print(level);
-                Serial.print('\n');
+                send(input.value, input.dme + 1);
             }
         }
     };
@@ -94,7 +86,7 @@ public:
             int cache = readPin(inputs[i].pin, inputs[i].digital);
 
             // debouncing value - only values with a bigger difference than 3 are send
-            if (cache < inputs[i].value - 3 || cache > inputs[i].value + 3) {
+            if (cache < inputs[i].value - 5 || cache > inputs[i].value + 5) {
                 inputs[i].value = cache;
                 set(inputs[i]);
             } else if (inputs[i].digital && cache != inputs[i].value) { // digital always
@@ -105,6 +97,7 @@ public:
     };
 private:
     // input array - if needed change size, for loop and add input
+    // {level, mux, pin, dme, digital, stereo}
     inputpin inputs[22] = {
             // SWITCHES
             {0, 0, PIN_MUX1, 50, true,  false},   // Talkover Mic1
@@ -133,7 +126,7 @@ private:
             {0, 6, PIN_MUX2, 77, false, false},   // Mid
             {0, 6, PIN_MUX3, 78, false, false},   // Low
             // extra
-            {0, 7, PIN_MUX1, 79, true,  false},    // Delay Switch
+            //{0, 7, PIN_MUX1, 79, true,  false},    // Delay Switch
     };
 
     // cached mux pin
@@ -195,20 +188,79 @@ private:
                 break;
         };
     };
+
+    void send(int level, uint8_t dme) {
+        if (dme < 70 && dme > 53){
+            Serial.print("SVL 0 ");
+            Serial.print(dme);
+            Serial.print(" ");
+            Serial.print(level);
+            Serial.print('\n');
+        } else {
+            Serial.print("SPR 0 ");
+            Serial.print(dme);
+            Serial.print(" ");
+            Serial.print(level);
+            Serial.print('\n');
+        }
+
+    };
 };
 
 class Outputs {
-public:
-    void getDME(){
-        Serial.print("GMT 0 56 0 \n");
-        if (Serial.available())
-        {
-           s = Serial.readStringUntil('\n');   // Until CR (Carriage Return)
-        }
-        DPRINTLN(s);
-        DPRINTLN(s.substring(126));
 
+public:
+
+    void getDME() {
+        Serial.print("GMT 0 49 0 \n");
     };
+
+    void recvWithStartEndMarkers() {
+        static boolean recvInProgress = false;
+        static byte ndx = 0;
+        char startMarker = 'U';
+        char endMarker = 'H';
+        char rc;
+
+        while (Serial.available() > 0 && newData == false) {  // & -> boolean &&->Bitwise
+            rc = Serial.read();
+
+            if (recvInProgress == true) {
+                DPRINTLN("recvInProgress == true");
+                if (rc != endMarker) {
+                    receivedChars[ndx] = rc;
+                    ndx++;
+                    if (ndx >= numChars) {
+                        ndx = numChars - 1;
+                    }
+                } else {
+                    recvInProgress = false;
+                    ndx = 0;
+                    newData = true;
+                }
+            } else if (rc == startMarker) {
+                recvInProgress = true;
+            }
+        }
+    }
+
+    void parseData() {      // split the data into its parts
+
+        char *strtokIndx; // this is used by strtok() as an index
+
+        strtokIndx = strtok(tempChars, " ");      // get the first part - the string
+
+        // read the first 8 values of DME response
+        // MTR 0 56 0 CUR -9428 -9780 -9376 -13801 -7432 -9004 -9004 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 HOLD -9322 -9741 -9332 -13801 -7421 -8943 -8943 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801
+        for (uint8_t i = 0; i < 8; i++) {
+            strtokIndx = strtok(NULL, " ");      // get the first part - the string
+            outputs[i].value = atoi(strtokIndx);     // convert this part to an integer
+            set(outputs[i]);
+            DPRINTLN(outputs[i].value);
+        }
+        outputUpdate = true;
+    }
+
     // set LED Bar output
     void set(outputpin out) {
         if (out.bar) {
@@ -219,26 +271,24 @@ public:
             }
         } else {
             // map DME value to 1 LED, dimmed
-            int level = map(out.value, 0, 1023, 0, 4095);
+            int level = map(out.value, -13801, 1, 0, 4095);
             Tlc.set(out.out, level);
         }
 
         Tlc.update();
-    };
-private:
-    String s;
+    }
 
-    // output array
-    outputpin outputs[9] = {
-            {0, 1,  1,  true}, // input DJ oben
-            {0, 17, 2,  true}, // input Bar
-            {0, 32, 3,  true}, // input spare
-            {0, 11, 15, false}, // Mic1 Level
-            {0, 12, 16, false}, // Mic2 Level
-            {0, 13, 5,  false}, // Output Oben Level
-            {0, 14, 6,  false}, // Output Bar Level
-            {0, 15, 7,  false}, // Output Keller Level
-            {0, 28, 99, false} // Error LED
+private:
+    // output array {level, TLC number, DME number, bar}
+    outputpin outputs[8] = {
+            {0, 29, 1,  false}, // input DJ oben
+            {0, 13, 2,  false}, // input Bar
+            {0, 14, 3,  false}, // input spare
+            {0, 1,  5,  true},  // Output Oben Level
+            {0, 17, 6,  true},  // Output Bar Level
+            {0, 33, 7,  true},  // Output Keller Level
+            {0, 30, 15, false}, // Mic1 Level
+            {0, 44, 16, false}, // Mic2 Level
     };
 
 };
@@ -253,11 +303,23 @@ void setupPins() {
     pinMode(MUX_S2, OUTPUT);
 };
 
+// enable error led
+void enableError() {
+    digitalWrite(ERROR_LED, HIGH);
+}
+
+// disable Error led
+void disableError() {
+    digitalWrite(ERROR_LED, LOW);
+}
+
 // Creating class objects
 Inputs inputs;
 Outputs outputs;
 
 void setup() {
+    pinMode(ERROR_LED, OUTPUT);
+    enableError();
     // Start Serial - BAUD set in define
     Serial.begin(SERIAL_BAUD);
     setupPins();
@@ -265,14 +327,38 @@ void setup() {
     // init TLC for LEDs
     Tlc.init();
     Tlc.clear();
+
+    disableError();
+
+    // outputs.getDME();
 };
 
-
 void loop() {
+    //update all inputs and send to dme
+
     // Tlc.clear();
-    // //update all inputs and send to dme
-    // inputs.update();
-    // delay(1000);
-    outputs.getDME();
-    delay(1000);
+
+    // send command for new outputs every 3rd loop & enable Error if no DME response
+    // if (i > 2 && outputUpdate) {
+    //     outputs.getDME();
+    //     outputUpdate = false;
+    //     disableError();
+    // } else if (i > 10 && !outputUpdate){
+    //     outputs.getDME();
+    //     enableError();
+    // }
+    // i++;
+    // read buffer and check for start / end markers
+    // outputs.recvWithStartEndMarkers();
+    // if (newData == true) {
+    //     strcpy(tempChars, receivedChars);
+    //     DPRINTLN(receivedChars);
+    //     // this temporary copy is necessary to protect the original data
+    //     //   because strtok() used in parseData() replaces the commas with \0
+    //     outputs.parseData();
+    //     newData = false;
+    // }
+    // outputs.getDME();
+    inputs.update();
+    delay(100);
 };
