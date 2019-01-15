@@ -73,7 +73,8 @@ public:
         }
     };
 
-    void update() {
+    void update(boolean setall) {
+        // setall for initialisation and sending all values to the DME
         // Looping over private inputs array
         for (int i = 0; i < 22; i++) {
             // Changing Mux if needed - normally every 3rd time
@@ -86,10 +87,10 @@ public:
             int cache = readPin(inputs[i].pin, inputs[i].digital);
 
             // debouncing value - only values with a bigger difference than 3 are send
-            if (cache < inputs[i].value - 5 || cache > inputs[i].value + 5) {
+            if (cache < inputs[i].value - 5 || cache > inputs[i].value + 5 || setall) {
                 inputs[i].value = cache;
                 set(inputs[i]);
-            } else if (inputs[i].digital && cache != inputs[i].value) { // digital always
+            } else if ((inputs[i].digital && cache != inputs[i].value) || setall) { // digital always
                 inputs[i].value = cache;
                 set(inputs[i]);
             }
@@ -328,6 +329,8 @@ void setup() {
     Tlc.init();
     Tlc.clear();
 
+    inputs.update(true);
+
     disableError();
 
     // outputs.getDME();
@@ -359,6 +362,6 @@ void loop() {
     //     newData = false;
     // }
     // outputs.getDME();
-    inputs.update();
+    inputs.update(false);
     delay(100);
 };
