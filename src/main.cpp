@@ -62,7 +62,7 @@ public:
     void set(inputpin input) {
         // different command for EQ
         if (input.mux < 7 && input.mux > 3) {
-            int level = map(input.value, 0, 1023, -1800, 1800);
+            int level = map(input.value, 0, 1023, -600, 600);
             send(level, input.dme);
         } else {
             send(input.value, input.dme);
