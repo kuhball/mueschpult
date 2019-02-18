@@ -14,17 +14,19 @@
 #endif
 
 /*DEFINES*/
-#define SERIAL_RX 2 //Serial Pins for DME Communication
+#define SERIAL_RX 2 //Serial pins for DME Communication
 #define SERIAL_TX 3 //possible pins: 8, 9, 10, 11, 14 (MISO), 15 (SCK), 16 (MOSI)
 #define SERIAL_BAUD 38400
 
-#define ERROR_LED 7
+#define ERROR_LED 7 // LED connected to pin 7
 
 /*MUX STUFF*/
+// read pins
 #define PIN_MUX1 A0
 #define PIN_MUX2 A1
 #define PIN_MUX3 A2
 
+// write pins for setting mux channel
 #define MUX_S0 A3
 #define MUX_S1 A4
 #define MUX_S2 A5
@@ -32,23 +34,23 @@
 
 struct inputpin {
     int value;
-    uint8_t mux; // Mux value to read from this input
-    uint8_t pin; // Pin to read from
-    uint8_t dme; // Value needed for DME set
+    uint8_t mux;  // Mux value to read from this input
+    uint8_t pin;  // Pin to read from
+    uint8_t dme;  // Value needed for DME set
     bool digital; // needed to distinguish analog from digital read
-    bool stereo;
+    bool stereo;  // set two dme values if stereo
 };
 
 struct outputpin {
     int value;
     uint8_t out; // TLC Number
     uint8_t dme; // DME Read number
-    bool bar;
+    bool bar;    // set if led bar (size 10)
 };
 
-const byte numChars = 200;
+const byte numChars = 200;        //  buffer for dme read
 char receivedChars[numChars];
-char tempChars[numChars];        // temporary array for use when parsing
+char tempChars[numChars];         // temporary array for use when parsing
 
 boolean newData = false;
 
@@ -62,11 +64,12 @@ public:
     void set(inputpin input) {
         // different command for EQ
         if (input.mux < 7 && input.mux > 3) {
+            // map poti value to dme value (only ±6dB)
             int level = map(input.value, 0, 1023, -600, 600);
             send(level, input.dme);
         } else {
             send(input.value, input.dme);
-            // Setting second value -> Stereo
+            // Setting second value -> stereo
             if (input.stereo) {
                 send(input.value, input.dme + 1);
             }
@@ -75,7 +78,7 @@ public:
 
     void update(boolean setall) {
         // setall for initialisation and sending all values to the DME
-        // Looping over private inputs array
+        // Looping over inputpin inputs[22]
         for (int i = 0; i < 22; i++) {
             // Changing Mux if needed - normally every 3rd time
             if (inputs[i].mux != currentMux) {
@@ -191,6 +194,7 @@ private:
         };
     };
 
+    // write dme command on serial, different command for volumes
     void send(int level, uint8_t dme) {
         if (dme < 70 && dme > 53){
             Serial.print("SVL 0 ");
@@ -205,18 +209,16 @@ private:
             Serial.print(level);
             Serial.print('\n');
         }
-
     };
 };
 
 class Outputs {
-
 public:
-
     void getDME() {
         Serial.print("GMT 0 56 0 \n");
     };
 
+    // from https://forum.arduino.cc/index.php?topic=288234.0
     void recvWithStartEndMarkers() {
         static boolean recvInProgress = false;
         static byte ndx = 0;
@@ -328,8 +330,10 @@ void setup() {
     Tlc.init();
     Tlc.clear();
 
+    // send all poti values to dme for initialisation
     inputs.update(true);
 
+    // receive all dme values
     outputs.getDME();
 
     disableError();
@@ -372,4 +376,6 @@ void loop() {
         outputs.parseData();
         newData = false;
     }
+    // TODO: enable error LED if no answer from DME
+    // TODO: test this shit!
 };
