@@ -46,7 +46,7 @@ struct outputpin {
     bool bar;
 };
 
-const byte numChars = 100;
+const byte numChars = 200;
 char receivedChars[numChars];
 char tempChars[numChars];        // temporary array for use when parsing
 
@@ -86,8 +86,9 @@ public:
             // analog / digital read the input pin
             int cache = readPin(inputs[i].pin, inputs[i].digital);
 
+
             // debouncing value - only values with a bigger difference than 3 are send
-            if (cache < inputs[i].value - 5 || cache > inputs[i].value + 5 || setall) {
+            if (cache < inputs[i].value - 3 || cache > inputs[i].value + 3 || setall) {
                 inputs[i].value = cache;
                 set(inputs[i]);
             } else if ((inputs[i].digital && cache != inputs[i].value) || setall) { // digital always
@@ -127,7 +128,7 @@ private:
             {0, 6, PIN_MUX2, 77, false, false},   // Mid
             {0, 6, PIN_MUX3, 78, false, false},   // Low
             // extra
-            //{0, 7, PIN_MUX1, 79, true,  false},    // Delay Switch
+            {0, 7, PIN_MUX1, 79, true,  true},    // Delay Switch
     };
 
     // cached mux pin
@@ -213,7 +214,7 @@ class Outputs {
 public:
 
     void getDME() {
-        Serial.print("GMT 0 49 0 \n");
+        Serial.print("GMT 0 56 0 \n");
     };
 
     void recvWithStartEndMarkers() {
@@ -223,11 +224,10 @@ public:
         char endMarker = 'H';
         char rc;
 
-        while (Serial.available() > 0 && newData == false) {  // & -> boolean &&->Bitwise
+        while (Serial.available() > 0 && newData == false) {
             rc = Serial.read();
 
             if (recvInProgress == true) {
-                DPRINTLN("recvInProgress == true");
                 if (rc != endMarker) {
                     receivedChars[ndx] = rc;
                     ndx++;
@@ -257,7 +257,6 @@ public:
             strtokIndx = strtok(NULL, " ");      // get the first part - the string
             outputs[i].value = atoi(strtokIndx);     // convert this part to an integer
             set(outputs[i]);
-            DPRINTLN(outputs[i].value);
         }
         outputUpdate = true;
     }
@@ -331,37 +330,46 @@ void setup() {
 
     inputs.update(true);
 
+    outputs.getDME();
+
     disableError();
 
-    // outputs.getDME();
 };
+
+uint8_t i=0;
+unsigned long time = millis();
 
 void loop() {
     //update all inputs and send to dme
+    if(millis()-time > 100){
+      inputs.update(false);
+      while (Serial.available() > 0) {
+          Serial.read();
+      }
+      outputs.getDME();
+      time = millis();
+    }
 
-    // Tlc.clear();
 
-    // send command for new outputs every 3rd loop & enable Error if no DME response
-    // if (i > 2 && outputUpdate) {
-    //     outputs.getDME();
+    // // send command for new outputs every 3rd loop & enable Error if no DME response
+    // if (i > 5 && outputUpdate) {
+    //
     //     outputUpdate = false;
     //     disableError();
-    // } else if (i > 10 && !outputUpdate){
+    //     i=0;
+    // } else if (i > 20 && !outputUpdate){
     //     outputs.getDME();
     //     enableError();
     // }
     // i++;
     // read buffer and check for start / end markers
-    // outputs.recvWithStartEndMarkers();
-    // if (newData == true) {
-    //     strcpy(tempChars, receivedChars);
-    //     DPRINTLN(receivedChars);
-    //     // this temporary copy is necessary to protect the original data
-    //     //   because strtok() used in parseData() replaces the commas with \0
-    //     outputs.parseData();
-    //     newData = false;
-    // }
-    // outputs.getDME();
-    inputs.update(false);
-    delay(100);
+    outputs.recvWithStartEndMarkers();
+    if (newData == true) {
+        strcpy(tempChars, receivedChars);
+        // this temporary copy is necessary to protect the original data
+        //   because strtok() used in parseData() replaces the commas with \0
+        Tlc.clear();
+        outputs.parseData();
+        newData = false;
+    }
 };

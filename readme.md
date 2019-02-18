@@ -1,9 +1,10 @@
 # Müschpult
-Dokumentation des Mischpults für die Jupibar im Gängeviertel.
+Dokumentation des Mischpults für die Jupibar im Gängeviertel. Hier werden 3 Stereo Ausgänge für verschiedene Barbereiche mit eigener Lautstärkerregelung benötigt. Das Grundgerät ist eine Yamaha DME 24N. Hierfür wurde mithilfe eines Arduino Nanos eine RS232 Fernbedienung gebaut.
 
-## Vorraussetzungen Code
-1. Serial mit der DME
-2. LEDs & Potis von Frontpanel einlesen / ausgeben
+## Anforderung
+1. RS232 mit DME sprechen
+2. Input von Potis & Schaltern auf DME setzen
+3. DME Werte auf LEDs anzeigen
 
 ## Benutze Libraries
 ### Tlc5940
@@ -11,7 +12,7 @@ Benutzt für LEDs auf Frontpanel.
 
 ## Hardware
 ### Mux 4051
-8 Kanal analog Multiplexer für Input Potis.
+8 Kanal analog Multiplexer für Input Potis. Hiervon wurden 3 Stück eingesetzt. Alle 3 werden zeitgleich gesetzt und dann am entsprechenden Pin ausgelesen.
 Pins für lesen:
 - A0
 - A1
@@ -94,9 +95,11 @@ Pins für setzen des Zustands:
 |               | 7    |      |
 
 ## DME Meter
+Beispielantwort der DME auf ein `GMT 0 56 0`.
 ```
 MTR 0 56 0 CUR -13801 -13801 -13801 -6000 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 HOLD -9322 -9741 -9332 -13801 -7421 -8943 -8943 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801
 
 MTR 0 56 0 CUR -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 HOLD -9322 -9741 -9332 -13801 -7421 -8943 -8943 -13801
+MTR 0 56 0 CUR 1 1 1 1 1 1 1 1 HOLD -9322 -9741 -9332 -13801 -7421 -8943 -8943 -13801
 
 ```
