@@ -50,7 +50,7 @@
 #if ((RAMEND - RAMSTART) < 1023)
 #define SERIAL_RX_BUFFER_SIZE 16
 #else
-#define SERIAL_RX_BUFFER_SIZE 256 // geändert Mrz 2019
+#define SERIAL_RX_BUFFER_SIZE 256 // changed march 2019 default 64
 #endif
 #endif
 #if (SERIAL_TX_BUFFER_SIZE>256)
