@@ -84,26 +84,26 @@ In der DME angelegt aber am Müschpult nicht vorhanden
 ## MUX 1
 | Name          | Pin  | DME  |
 | ------------- | ---- | ---- |
-| Talkover Mic2 | 0    | 51   |
-| Volume Mic1   | 1    | 54   |
-| Input Bar     | 2    | 60   |
-| Output Bar    | 3    | 66   |
-| EQ Oben Mid   | 4    | 71   |
-| EQ Bar Mid    | 5    | 74   |
-| EQ Keller Mid | 6    | 77   |
-|               | 7    |      |
+| n.c.          | 0    | 51   |
+| Volume DJ     | 1    | 54   |
+| Volume Bar    | 2    | 60   |
+| n.c.          | 3    | 66   |
+| Volume DJ     | 4    | 71   |
+| n.c.          | 5    | 74   |
+| n.c.          | 6    | 77   |
+| n.c.          | 7    |      |
 
 ## MUX 2
 | Name          | Pin  | DME  |
 | ------------- | ---- | ---- |
-| Mute Mic1     | 0    | 52   |
-| Volume Mic2   | 1    | 55   |
-| Input Spare   | 2    | 62   |
-| Output Unten  | 3    | 68   |
-| EQ Oben Low   | 4    | 72   |
-| EQ Bar Low    | 5    | 75   |
-| EQ Keller Low | 6    | 78   |
-|               | 7    |      |
+| EQ_Bar_Lo     | 0    | 52   |
+| EQ_Bar_Mid    | 1    | 55   |
+| EQ_Bar_Hi     | 2    | 62   |
+| Vol_Bar       | 3    | 68   |
+| EQ_Oben_Hi    | 4    | 72   |
+| EQ_Oben_Mid   | 5    | 75   |
+| EQ_Oben_Mid   | 6    | 78   |
+| EQ_Oben_Lo    | 7    |      |
 
 ## DME Meter
 Beispielantwort der DME auf ein `GMT 0 56 0`.
