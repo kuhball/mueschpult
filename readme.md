@@ -22,9 +22,9 @@ Pins für setzen des Zustands:
 
 ### Ledbar Treiber Shiftregister 74HC595
 3 in Reihe geschaltete Schieberegister betreiben zwei 10 segment Ledbars die den Ausgangspregel der DME an die Anlage darstellen.
--Clock Pin D2
--Latch Pin D3
--Data Pin D4
+- Clock Pin D2
+- Latch Pin D3
+- Data Pin D4
 
 
 ## DME Setup Liste
