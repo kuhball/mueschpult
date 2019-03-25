@@ -1,5 +1,5 @@
 # Müschpult 2
-Dokumentation des Mischpults für die Jupibar im Gängeviertel. Hier werden 3 Stereo Ausgänge für verschiedene Barbereiche mit eigener Lautstärkerregelung benötigt. Das Grundgerät ist eine Yamaha DME 24N. Hierfür wurde mithilfe eines Arduino Nanos eine RS232 Fernbedienung gebaut.
+Dokumentation des Mischpults für die Jupibar im Gängeviertel. Hier werden 2 Stereo Ausgänge für zwei Barbereiche mit eigener Lautstärkerregelung benötigt. Das Grundgerät ist eine Yamaha DME 24N. Hierfür wurde mithilfe eines Arduino Nanos eine RS232 Fernbedienung gebaut.
 
 ## Anforderung
 1. RS232 mit DME sprechen
@@ -7,26 +7,32 @@ Dokumentation des Mischpults für die Jupibar im Gängeviertel. Hier werden 3 St
 3. DME Werte auf LEDs anzeigen
 
 ## Benutze Libraries
-### Tlc5940
-Benutzt für LEDs auf Frontpanel.
+
 
 ## Hardware
-### Mux 4051
+### Mux 74HC4051
 8 Kanal analog Multiplexer für Input Potis. Hiervon wurden 3 Stück eingesetzt. Alle 3 werden zeitgleich gesetzt und dann am entsprechenden Pin ausgelesen.
 Pins für lesen:
-- A0
-- A1
-- A2
-
-Pins für setzen des Zustands:
 - A3
 - A4
 - A5
 
+Pins für setzen des Zustands:
+- A0
+- A1
+- A2
+
+### Ledbar Treiber Shiftregister 74HC595
+3 in Reihe geschaltete Schieberegister betreiben zwei 10 segment Ledbars die den Ausgangspregel der DME an die Anlage darstellen.
+-Clock Pin D2
+-Latch Pin D3
+-Data Pin D4
+
+
 ## DME Setup Liste
 
 - Talkover für Mikrofone 50 / 51 (mic1, mic2) - binär 1/0
-- Mute für Mikrofone 52 / 53 (mic1, mic2) - 0/1
+
 - Fader Volume 54 / 55 (mic1, mic2) -  min -13801, max 1000
 - Meter 56 (alle Meter)
   - 0 - alle Meter?
@@ -35,15 +41,14 @@ Pins für setzen des Zustands:
   - 3 - Spare Input
   - 4 - Output Level Oben
   - 5 - Output Level Bar
-  - 6 - Output Level Keller
   - 7 - Mic 1 Level
   - 8 - Mic 2 Level
-- Input Level Stereo in 1 - 58/59  min -13801, max 1000
-- Input Level Stereo in 2 - 60/61 min -13801, max 1000
-- Input Level Stereo in 3 - 62/63 min -13801, max 1000
+- Input Level Stereo in 1(DJ) - 58/59  min -13801, max 1000
+- Input Level Stereo in 2(Bar) - 60/61 min -13801, max 1000
+- Input Level Stereo in 3(Spare) - 62/63 min -13801, max 1000
 - Masterlevel Oben - 64/65
 - Masterlevel Bar - 66/67
-- Masterlevel Unten - 68/69
+
 - EQ Oben:
   - High 70
   - Mid 71
@@ -52,25 +57,31 @@ Pins für setzen des Zustands:
   - High 73
   - Mid 74
   - Low 75
+  
+In der DME angelegt aber am Müschpult nicht vorhanden  
+- 6 - Output Level Keller
+- Mute für Mikrofone 52 / 53 (mic1, mic2) - 0/1
 - EQ Keller
   - High 76
   - Mid 77
   - Low 78
+- Masterlevel Keller - 68/69
+
 
 ## Inputs Arduino
-### MUX 1
+### MUX 0
 | Name           | Pin  | DME  |
 | -------------- | ---- | ---- |
-| Talkover Mic1  | 0    | 50   |
-| Mute Mic2      | 1    | 53   |
-| Input DJ       | 2    | 58   |
-| Output Oben    | 3    | 64   |
-| EQ Oben High   | 4    | 70   |
-| EQ Bar High    | 5    | 73   |
-| EQ Keller High | 6    | 76   |
-| Delay Switch   | 7    | ??   |
+| n.c.           | 0    | 50   |
+| n.c.           | 1    | 53   |
+| n.c.           | 2    | 58   |
+| n.c.           | 3    | 64   |
+| n.c.           | 4    | 70   |
+| Talkover Mic2  | 5    | 73   |
+| Delay Switch   | 6    | 76   |
+| Talkover Mic1  | 7    | ??   |
 
-## MUX 2
+## MUX 1
 | Name          | Pin  | DME  |
 | ------------- | ---- | ---- |
 | Talkover Mic2 | 0    | 51   |
@@ -82,7 +93,7 @@ Pins für setzen des Zustands:
 | EQ Keller Mid | 6    | 77   |
 |               | 7    |      |
 
-## MUX 3
+## MUX 2
 | Name          | Pin  | DME  |
 | ------------- | ---- | ---- |
 | Mute Mic1     | 0    | 52   |
