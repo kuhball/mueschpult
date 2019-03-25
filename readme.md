@@ -8,6 +8,7 @@ Dokumentation des Mischpults für die Jupibar im Gängeviertel. Hier werden 2 St
 
 ## geänderte Header Dateien
 HardwareSerial.h
+
 #define SERIAL_RX_BUFFER_SIZE 256
 
 ## Hardware
