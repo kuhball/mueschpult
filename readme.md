@@ -6,6 +6,10 @@ Dokumentation des Mischpults für die Jupibar im Gängeviertel. Hier werden 2 St
 2. Input von Potis & Schaltern auf DME setzen
 3. DME Werte auf LEDs anzeigen
 
+## geänderte Header Dateien
+HardwareSerial.h
+
+#define SERIAL_RX_BUFFER_SIZE 256
 
 ## Hardware
 ### Mux 74HC4051
@@ -104,6 +108,12 @@ In der DME angelegt aber am Müschpult nicht vorhanden
 | EQ_Oben_Lo    | 7    |      |
 
 ## DME Meter
+
+!!! Zum Verarbeiten des langen Antwortstrings der DME wurde der Serielle Buffer vergrößert.
+Hierfür wurde die variable SERIAL_RX_BUFFER_SIZE in der HardwareSerial.h auf 256 gesetzt.
+http://shelvin.de/arduino-serial-buffer-size-aendern/
+
+
 Beispielantwort der DME auf ein `GMT 0 56 0`.
 ```
 MTR 0 56 0 CUR -13801 -13801 -13801 -6000 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 HOLD -9322 -9741 -9332 -13801 -7421 -8943 -8943 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801 -13801
