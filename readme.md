@@ -12,7 +12,7 @@ HardwareSerial.h
 #define SERIAL_RX_BUFFER_SIZE 256
 
 Der Compiler erkennt u.U. nicht das diese Datei geändert wurde. 
-Es ist also ratsam an entsprechnder stelle im Projekt die vom Compuler erstellte Objektdateie HardwareSerial.cpp.o zu löschen, damit sie neu kompiliert wird.
+Es ist also ratsam an entsprechender stelle im Projekt die vom Compuler erstellte Objektdateie HardwareSerial.cpp.o zu löschen, damit sie neu kompiliert wird.
 
 ## Hardware
 ### Mux 74HC4051
