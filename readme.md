@@ -1,4 +1,4 @@
-# Müschpult
+# Müschpult 2
 Dokumentation des Mischpults für die Jupibar im Gängeviertel. Hier werden 3 Stereo Ausgänge für verschiedene Barbereiche mit eigener Lautstärkerregelung benötigt. Das Grundgerät ist eine Yamaha DME 24N. Hierfür wurde mithilfe eines Arduino Nanos eine RS232 Fernbedienung gebaut.
 
 ## Anforderung
