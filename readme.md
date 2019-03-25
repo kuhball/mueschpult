@@ -6,8 +6,6 @@ Dokumentation des Mischpults für die Jupibar im Gängeviertel. Hier werden 2 St
 2. Input von Potis & Schaltern auf DME setzen
 3. DME Werte auf LEDs anzeigen
 
-## Benutze Libraries
-
 
 ## Hardware
 ### Mux 74HC4051
