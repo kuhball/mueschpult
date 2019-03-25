@@ -83,10 +83,10 @@ In der DME angelegt aber am Müschpult nicht vorhanden
 | Name          | Pin  | DME  |
 | ------------- | ---- | ---- |
 | n.c.          | 0    | 51   |
-| Volume DJ     | 1    | 54   |
-| Volume Bar    | 2    | 60   |
+| Vol in Spare  | 1    | 54   |
+| Vol in Bar    | 2    | 60   |
 | n.c.          | 3    | 66   |
-| Volume DJ     | 4    | 71   |
+| Vol in DJ     | 4    | 71   |
 | n.c.          | 5    | 74   |
 | n.c.          | 6    | 77   |
 | n.c.          | 7    |      |
